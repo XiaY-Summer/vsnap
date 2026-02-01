@@ -16,12 +16,41 @@ vsnap 是一个简洁的命令行工具，类似于 Git 的快照功能，但更
 
 ## 快速开始
 
-### 编译环境要求
+### 环境要求
 
 - **C++17** 或更高版本
 - **CMake** 3.10+
 - **OpenSSL** 开发库
 
+### 安装依赖
+
+**Arch Linux:**
+```bash
+sudo pacman -S openssl cmake ninja
+```
+
+**Ubuntu / Debian:**
+```bash
+sudo apt install build-essential libssl-dev cmake ninja-build
+```
+
+**Fedora:**
+```bash
+sudo dnf install gcc-c++ openssl-devel cmake ninja-build
+```
+
+### 编译
+
+```bash
+# 克隆仓库
+git clone https://github.com/XiaY-Summer/vsnap.git
+cd vsnap
+
+# 创建构建目录并编译
+mkdir build && cd build
+cmake -G Ninja ..
+ninja
+```
 
 ### 使用示例
 
@@ -90,5 +119,7 @@ vsnap/
 └── src/
     └── main.cpp      # 入口与参数解析
 ```
+
+## 贡献
 
 欢迎提交 Issue 和 Pull Request！
