@@ -2,7 +2,11 @@
 
 #include <iostream>
 #include <string>
+#ifdef _WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 namespace vsnap_log {
 
@@ -25,18 +29,27 @@ enum LogLevel {
 };
 // 日志级别 0: 默认 1: 详细
 int logLevel = 0;
+inline bool colorEnabled = true;
 
 // 检测是否为 TTY（终端），管道重定向时禁用颜色
 inline bool isTty() {
+#ifdef _WIN32
+    return _isatty(_fileno(stdout));
+#else
     return isatty(STDOUT_FILENO);
+#endif
 }
 
 inline std::string color(const char* code, bool enable = true) {
-    return (enable && isTty()) ? code : "";
+    return (enable && colorEnabled && isTty()) ? code : "";
 }
 
 inline std::string reset(bool enable = true) {
-    return (enable && isTty()) ? ansi::reset : "";
+    return (enable && colorEnabled && isTty()) ? ansi::reset : "";
+}
+
+inline void setColorEnabled(bool enabled) {
+    colorEnabled = enabled;
 }
 
 inline std::ostream& success(std::ostream& out = std::cout) {

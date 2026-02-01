@@ -3,7 +3,6 @@
 #include <string>
 #include <filesystem>
 #include <chrono>
-#include <sys/stat.h>
 
 using namespace std;
 
@@ -19,7 +18,7 @@ string scanFiles(const string& path) {
         }
         else {
             //cout<<"file: "<<entry.path().string()<<endl;
-            file += entry.path().string() + "\n";
+            file += entry.path().generic_string() + "\n";
         }
     }
     return file;
@@ -38,9 +37,11 @@ string getFileSize(const string& filePath) {
 // 获取文件最后修改时间，返回 string 类型（秒级时间戳）
 string getFileLastModifyTime(const string& filePath) {
     try {
-        struct stat st;
-        if (stat(filePath.c_str(), &st) != 0) return "0";
-        return to_string(st.st_mtime);
+        auto ftime = filesystem::last_write_time(filePath);
+        auto sctp = chrono::time_point_cast<chrono::system_clock::duration>(
+            ftime - filesystem::file_time_type::clock::now() + chrono::system_clock::now()
+        );
+        return to_string(chrono::system_clock::to_time_t(sctp));
     } catch (...) {
         return "0";
     }

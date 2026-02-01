@@ -44,30 +44,32 @@ inline fileInfo fileInfo;
 class command {
 public:
     void mkdir(const std::string& dirName) {
-        std::string cmd = "mkdir -p \"" + dirName + "\"";
-        //cout << "命令：" << cmd << endl;
-        system(cmd.c_str());
+        try {
+            std::filesystem::create_directories(std::filesystem::path(dirName));
+        } catch (...) {
+            // ignore
+        }
     }
 
     void touch(const std::string& fileName) {
-        std::string cmd = "touch \"" + fileName + "\"";
-        system(cmd.c_str());
+        std::ofstream(fileName, std::ios::app).close();
     }
 
     // 复制文件
     void copy(const std::string& srcFile, const std::string& destFile) {
-        // 检测目标路径是否存在
-        if (!exists(destFile)) {
-            // 创建目标目录（路径加引号以支持空格）
-            std::string parentDir = destFile.substr(0, destFile.find_last_of("/"));
-            std::string cmd = "mkdir -p \"" + parentDir + "\"";
-            system(cmd.c_str());
-            //vsnap_log::printInfo("命令: " + cmd);
+        try {
+            std::filesystem::path destPath(destFile);
+            if (destPath.has_parent_path()) {
+                std::filesystem::create_directories(destPath.parent_path());
+            }
+            std::filesystem::copy_file(
+                std::filesystem::path(srcFile),
+                destPath,
+                std::filesystem::copy_options::overwrite_existing
+            );
+        } catch (...) {
+            // ignore
         }
-        // 复制文件
-        std::string cmd = "cp -r \"" + srcFile + "\" \"" + destFile + "\"";
-        system(cmd.c_str());
-        //vsnap_log::printInfo("命令: " + cmd);
     }
     // 列出目录下所有文件（使用 filesystem，返回空格分隔的文件名）
     string ls(const std::string& dirName) {
@@ -85,15 +87,19 @@ public:
 
     // 删除文件
     void rm(const std::string& fileName) {
-        // 防止文件名存在空格
-        std::string cmd = "rm -rf \"" + fileName + "\"";
-        system(cmd.c_str());
+        try {
+            std::filesystem::remove_all(std::filesystem::path(fileName));
+        } catch (...) {
+            // ignore
+        }
     }
 
     bool exists(const std::string& fileName) {
-        // 路径加引号，否则含空格或特殊字符时 test -e 会解析错误
-        std::string cmd = "test -e \"" + fileName + "\"";
-        return system(cmd.c_str()) == 0;
+        try {
+            return std::filesystem::exists(std::filesystem::path(fileName));
+        } catch (...) {
+            return false;
+        }
     }
 };
 
@@ -259,7 +265,7 @@ inline bool init() {
     return true;
 }
 
-inline bool list() {
+inline bool listSnapshots() {
     command command;
     if (!command.exists(".vsnap")) {
         vsnap_log::printError("未初始化！请先执行 vsnap --init");
