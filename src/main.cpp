@@ -1,5 +1,10 @@
 #include <iostream>
 #include <string>
+#include <clocale>
+#include <locale>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "option.hpp"
 #include "log.hpp"
 
@@ -79,7 +84,7 @@ void judgeMode() {
         snap();
     }
     else if(config.mode == "list") {
-        list();
+        listSnapshots();
     }
     else if(config.mode == "restore") {
         restore();
@@ -94,6 +99,40 @@ void judgeMode() {
     }
 }
 int main(int argc, char* argv[]) {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE) {
+        DWORD mode = 0;
+        if (GetConsoleMode(hOut, &mode)) {
+            bool vtOk = SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+            vsnap_log::setColorEnabled(vtOk);
+        }
+    }
+    if (hErr != INVALID_HANDLE_VALUE) {
+        DWORD mode = 0;
+        if (GetConsoleMode(hErr, &mode)) {
+            SetConsoleMode(hErr, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+        }
+    }
+#endif
+#ifdef _WIN32
+    std::setlocale(LC_ALL, ".UTF-8");
+#else
+    std::setlocale(LC_ALL, "");
+#endif
+    try {
+#ifdef _WIN32
+        std::locale::global(std::locale(".UTF-8"));
+#else
+        std::locale::global(std::locale(""));
+#endif
+        std::cout.imbue(std::locale());
+        std::cerr.imbue(std::locale());
+    } catch (...) {
+    }
     if(!parseArgs(argc, argv)) {
         vsnap_log::printError("参数错误！使用 --help 查看用法");
         return 0;
