@@ -91,10 +91,4 @@ vsnap/
     └── main.cpp      # 入口与参数解析
 ```
 
-## 许可证
-
-本项目采用 MIT 许可证。
-
-## 贡献
-
 欢迎提交 Issue 和 Pull Request！
