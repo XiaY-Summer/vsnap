@@ -478,7 +478,7 @@ inline bool restore() {
             vsnap_log::bullet() << "哈希: " << vsnap_log::color(vsnap_log::ansi::dim)
                                 << fileInfo.fileHash << vsnap_log::reset() << endl;
         }
-        // ========== 在这里添加你的额外处理逻辑 ==========
+        
         // 例如：检查对象文件是否存在
         string objectPath = ".vsnap/objects/" + fileInfo.fileHash + ".bin";
         if (!command.exists(objectPath)) {
@@ -494,10 +494,6 @@ inline bool restore() {
         // 复制文件到目标位置
         command.copy(objectPath, fileInfo.filePath);
         
-        // 例如：复制文件到目标位置
-        // command.copy(objectPath, info.filePath);
-        // 例如：恢复文件修改时间
-        // ...
         vsnap_log::printSuccess("[" + to_string(i - 2) + "] " + fileInfo.fileName + " (" + fileInfo.fileSize + " bytes)");
     }
     // 输出总文件数
