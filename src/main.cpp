@@ -28,10 +28,10 @@ bool parseArgs(int argc, char* argv[]){
             return true;
         }
 
-        else if(string(argv[i]) == "--snap") {
+        else if(string(argv[i]) == "--snap" || string(argv[i]) == "-s") {
             config.mode = "snap";
         }
-        else if(string(argv[i]) == "--option") {
+        else if(string(argv[i]) == "--option" || string(argv[i]) == "-o") {
             config.option = argv[i + 1];
             // 检查option是否为空
             if(config.option.empty()) {
@@ -49,7 +49,7 @@ bool parseArgs(int argc, char* argv[]){
             }
             i++;
         }
-        else if(string(argv[i]) == "--list") {
+        else if(string(argv[i]) == "--list" || string(argv[i]) == "-l") {
             config.mode = "list";
         }
         else if(string(argv[i]) == "--restore" || string(argv[i]) == "-r") {
@@ -62,8 +62,8 @@ bool parseArgs(int argc, char* argv[]){
             }
             i++;
         }
-        else if(string(argv[i]) == "--show") {
-            config.mode = "show";
+        else if(string(argv[i]) == "--status") {
+            config.mode = "status";
         }
         else return false;
     }
@@ -89,8 +89,8 @@ void judgeMode() {
     else if(config.mode == "restore") {
         restore();
     }
-    else if(config.mode == "show") {
-        show();
+    else if(config.mode == "status") {
+        status();
     }
     else {
         vsnap_log::printError("模式: " + config.mode);
