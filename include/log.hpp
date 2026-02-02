@@ -28,7 +28,7 @@ enum LogLevel {
     DETAIL = 1,
 };
 // 日志级别 0: 默认 1: 详细
-int logLevel = 0;
+int logLevel = 1;
 inline bool colorEnabled = true;
 
 // 检测是否为 TTY（终端），管道重定向时禁用颜色

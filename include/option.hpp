@@ -13,6 +13,7 @@
 #include "hash.hpp"
 #include "time.hpp"
 #include "log.hpp"
+#include "Version.hpp"
 
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
@@ -159,9 +160,7 @@ inline bool snap(string mode = "patch") {
 
     
 
-    repoConfig["current_version"]["patch"] = config.patch;
-    repoConfig["current_version"]["minor"] = config.minor;
-    repoConfig["current_version"]["major"] = config.major;
+    
     // 查看当前版本号在snapshots目录下是否存在
     string version = to_string(config.major) + "." + to_string(config.minor) + "." + to_string(config.patch);
     if (cmd.exists(".vsnap/snapshots/" + version + ".json")) {
@@ -169,9 +168,30 @@ inline bool snap(string mode = "patch") {
         string line;
         getline(cin, line);
         if (line != "Y" && line != "y") {
-            return false;
+            vsnap_log::printConfirm("是否需要手动指定版本号？(Y/N)");
+            getline(cin, line);
+            if (line != "Y" && line != "y") {
+                return false;
+            }
+            vsnap_log::printConfirm("请输入版本号：");
+            getline(cin, version);
+            if (version.empty()) {
+                vsnap_log::printError("版本号不能为空！");
+                return false;
+            }
+            // 检查版本号格式是否正确
+            if (!checkVersion(version)) {
+                vsnap_log::printError("版本号格式不正确！");
+                return false;
+            }
+            config.major = stoi(version.substr(0, version.find(".")));
+            config.minor = stoi(version.substr(version.find(".") + 1, version.find(".")));
+            config.patch = stoi(version.substr(version.find(".") + 1, version.find(".")));
         }
     }
+    repoConfig["current_version"]["patch"] = config.patch;
+    repoConfig["current_version"]["minor"] = config.minor;
+    repoConfig["current_version"]["major"] = config.major;
     ofstream configOut(".vsnap/config.json");
     configOut << repoConfig.dump(4);
     configOut.close();
@@ -379,6 +399,11 @@ inline bool restore() {
         vsnap_log::printError("未初始化！请先执行 vsnap --init");
         return false;
     }
+    // 检查版本号格式是否正确
+    if (!checkVersion(config.restoreVersion)) {
+        vsnap_log::printError("版本号格式不正确！");
+        return false;
+    }
     string version = config.restoreVersion;
     string jsonFilePath = ".vsnap/snapshots/" + version + ".json";
     // 校验对应版本的快照JSON文件是否存在
@@ -536,7 +561,7 @@ inline bool restore() {
     return true;
 }
 
-inline bool show() {
+inline bool status() {
     command command;
     if (!command.exists(".vsnap")) {
         vsnap_log::printError("未初始化！请先执行 vsnap --init");
