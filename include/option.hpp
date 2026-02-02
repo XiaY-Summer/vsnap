@@ -135,6 +135,7 @@ inline bool snap(string mode = "patch") {
         vsnap_log::printError("无法打开 .vsnap/config.json");
         return false;
     }
+    // 获取当前版本号
     json repoConfig;
     configIn >> repoConfig;
     configIn.close();
@@ -156,9 +157,21 @@ inline bool snap(string mode = "patch") {
         return false;
     }
 
+    
+
     repoConfig["current_version"]["patch"] = config.patch;
     repoConfig["current_version"]["minor"] = config.minor;
     repoConfig["current_version"]["major"] = config.major;
+    // 查看当前版本号在snapshots目录下是否存在
+    string version = to_string(config.major) + "." + to_string(config.minor) + "." + to_string(config.patch);
+    if (cmd.exists(".vsnap/snapshots/" + version + ".json")) {
+        vsnap_log::printError("版本号已存在！是否覆盖？(Y/N)");
+        string line;
+        getline(cin, line);
+        if (line != "Y" && line != "y") {
+            return false;
+        }
+    }
     ofstream configOut(".vsnap/config.json");
     configOut << repoConfig.dump(4);
     configOut.close();
