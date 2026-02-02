@@ -394,6 +394,8 @@ inline bool listSnapshots() {
 
 inline bool restore() {
     command command;
+    // 失败计数器
+    int failCount = 0;
     // 校验.vsnap目录是否存在
     if (!command.exists(".vsnap")) {
         vsnap_log::printError("未初始化！请先执行 vsnap --init");
@@ -527,12 +529,14 @@ inline bool restore() {
         string objectPath = ".vsnap/objects/" + fileInfo.fileHash + ".bin";
         if (!command.exists(objectPath)) {
             vsnap_log::printError("对象文件缺失，跳过: " + fileInfo.filePath);
+            failCount++;
             continue;
         }
 
         // 判断文件大小和哈希是否一致
         if (fileInfo.fileSize != getFileSize(objectPath) || fileInfo.fileHash != getFileHash(objectPath)) {
             vsnap_log::printError("文件大小或哈希不一致，跳过: " + fileInfo.filePath);
+            failCount++;
             continue;
         }
         // 复制文件到目标位置
@@ -557,7 +561,7 @@ inline bool restore() {
         configOut << repoConfig.dump(4);
         configOut.close();
     }
-    vsnap_log::printSuccess("版本还原完成！");
+    vsnap_log::printSuccess("版本还原完成！失败文件数: " + to_string(failCount));
     return true;
 }
 
