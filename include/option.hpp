@@ -165,7 +165,7 @@ inline bool snap(string mode = "patch") {
     // 查看当前版本号在snapshots目录下是否存在
     string version = to_string(config.major) + "." + to_string(config.minor) + "." + to_string(config.patch);
     if (cmd.exists(".vsnap/snapshots/" + version + ".json")) {
-        vsnap_log::printError("版本号已存在！是否覆盖？(Y/N)");
+        vsnap_log::printConfirm("快照版本号已存在！是否覆盖版本 " + version + " (Y/N)");
         string line;
         getline(cin, line);
         if (line != "Y" && line != "y") {

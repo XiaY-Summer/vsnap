@@ -87,6 +87,10 @@ inline std::ostream& bold(std::ostream& out = std::cout) {
     return out;
 }
 
+inline std::ostream& confirm(std::ostream& out = std::cout) {
+    out << color(ansi::cyan) << "? " << reset();
+    return out;
+}
 // 带样式的消息输出
 inline void printSuccess(const std::string& msg) {
     success() << msg << std::endl;
@@ -94,6 +98,11 @@ inline void printSuccess(const std::string& msg) {
 
 inline void printError(const std::string& msg) {
     error() << msg << std::endl;
+}
+
+// 询问用户是否确认样式的消息输出
+inline void printConfirm(const std::string& msg) {
+    confirm() << msg << std::endl;
 }
 
 inline void printWarn(const std::string& msg) {
